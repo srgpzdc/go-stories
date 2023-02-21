@@ -3,8 +3,8 @@ package main
 type EventType byte
 
 const (
-	_           = iota
-	EventDelete = iota
+	_                     = iota
+	EventDelete EventType = iota
 	EventPut
 )
 
