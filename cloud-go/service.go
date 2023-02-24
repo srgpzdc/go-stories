@@ -35,7 +35,9 @@ func keyValuePutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transact.WritePut(key, string(value))
+	if transact != nil {
+		transact.WritePut(key, string(value))
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -68,15 +70,17 @@ func keyValueDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transact.WriteDelete(key)
+	if transact != nil {
+		transact.WriteDelete(key)
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func initializeTransactionLog(source SourceLogType) error {
+func initializeTransactionLog() error {
 	var err error
 
-	transact, err := transactionLogFactory(source)
+	transact, err = NewFileTransactionLogger("transaction.log")
 	if err != nil {
 		return fmt.Errorf("failed to create event logger: %w", err)
 	}
@@ -102,32 +106,8 @@ func initializeTransactionLog(source SourceLogType) error {
 	return err
 }
 
-type SourceLogType byte
-
-const (
-	_                  = iota
-	File SourceLogType = iota
-	Postgres
-)
-
-func transactionLogFactory(source SourceLogType) (TransactionLogger, error) {
-	switch source {
-	case File:
-		return NewFileTransactionLogger("transaction.log")
-	case Postgres:
-		return NewPostgresTransactionLogger(PostgresDBParams{
-			dbName:   "kvs",
-			host:     "localhost",
-			user:     "admin",
-			password: "password",
-		})
-	default:
-		return nil, fmt.Errorf("unknown source log type")
-	}
-}
-
 func main() {
-	err := initializeTransactionLog(Postgres)
+	err := initializeTransactionLog()
 	if err != nil {
 		panic(err)
 	}
