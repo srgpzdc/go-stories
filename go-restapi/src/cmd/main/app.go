@@ -1,28 +1,30 @@
 package main
 
 import (
-	"log"
 	"net"
 	"net/http"
 	"restapi/internal/users"
+	"restapi/pkg/logging"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 func main() {
-	log.Println("create router")
+	logger := logging.GetLogger()
+	logger.Info("create router")
 	router := httprouter.New()
 
-	log.Println("create user handler")
-	handler := users.NewHandler()
+	logger.Info("create user handler")
+	handler := users.NewHandler(logger)
 	handler.Register(router)
 
-	log.Println("startup")
+	logger.Info("startup")
 	startup(router)
 }
 
 func startup(router *httprouter.Router) {
+	logger := logging.GetLogger()
 	listener, err := net.Listen("tcp", ":1234")
 	if err != nil {
 		panic(err)
@@ -34,5 +36,5 @@ func startup(router *httprouter.Router) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Fatalln(server.Serve(listener))
+	logger.Fatal(server.Serve(listener))
 }

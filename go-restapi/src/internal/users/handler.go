@@ -4,13 +4,17 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"restapi/internal/handlers"
+	"restapi/pkg/logging"
 )
 
 type handler struct {
+	logger logging.Logger
 }
 
-func NewHandler() handlers.Handler {
-	return &handler{}
+func NewHandler(logger logging.Logger) handlers.Handler {
+	return &handler{
+		logger: logger,
+	}
 }
 
 func (h *handler) Register(router *httprouter.Router) {
